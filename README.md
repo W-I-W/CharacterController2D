@@ -65,51 +65,20 @@ git clone https://github.com/W-I-W/CharacterController2D.git
 
 ## 🚀 Использование
 
-### Базовая настройка
-
-```csharp
-// CharacterData.cs — настройте через инспектор
-[CreateAssetMenu(menuName = "Character/Data")]
-public class CharacterData : ScriptableObject
-{
-    [Header("Movement")]
-    public float moveSpeed = 8f;
-    public float acceleration = 10f;
-
-    [Header("Jump")]
-    public float jumpForce = 16f;
-    public float coyoteTime = 0.15f;
-    public float jumpBufferTime = 0.1f;
-
-    [Header("Gravity")]
-    public float fallMultiplier = 2.5f;
-    public float lowJumpMultiplier = 2f;
-}
-```
-
 ### Добавить своё состояние
 
 ```csharp
-public class DashState : StateBase
+public class NormalMovement : CharacterState
 {
-    public DashState(StateMachine sm, CharacterController2D character)
-        : base(sm, character) { }
+    [SerializeField] private MovementParameters m_Movement;
 
-    public override void Enter()
-    {
-        // запустить dash-логику
-    }
+    private float m_CurrentSpeed = 0f;
 
-    public override void Update()
+    public override void OnUpdate(float dt)
     {
-        // проверка завершения дэша → переход в Idle/Move
-        if (dashComplete)
-            StateMachine.ChangeState<IdleState>();
-    }
-
-    public override void Exit()
-    {
-        // сброс дэша
+        float speed = (characterActions.movement.value.x * m_Movement.speedMovement * dt);
+        m_CurrentSpeed = Mathf.Lerp(m_CurrentSpeed, speed, dt);
+        characterActor.Movement(new Vector2(m_CurrentSpeed, 0));
     }
 }
 ```
@@ -117,13 +86,21 @@ public class DashState : StateBase
 ### Input Actions (New Input System)
 
 ```csharp
-// InputHandler.cs — подписка на события
-private void OnEnable()
-{
-    _actions.Gameplay.Jump.performed += OnJump;
-    _actions.Gameplay.Jump.canceled  += OnJumpCanceled;
-    _actions.Gameplay.Enable();
-}
+// CharacterActions.cs
+    public void Init() - Инициализировать состояние ввода
+    {
+        movement = new Vector2Input(m_InputHandler.Player.Move); 
+    }
+
+    private void OnEnable() — подписка на события
+    {
+        movement.Enable();
+    }
+
+    private void OnDisable() Отписаться от события
+    {
+        movement.Disable();
+    }
 ```
 
 ---
@@ -131,38 +108,23 @@ private void OnEnable()
 ## 📁 Структура проекта
 
 ```
-Assets/
+InternalAssets/
 └── Scripts/
     ├── Character/
-    │   ├── CharacterController2D.cs
-    │   ├── CharacterData.cs
-    │   └── InputHandler.cs
-    ├── StateMachine/
-    │   ├── StateMachine.cs
-    │   ├── StateBase.cs
-    │   └── States/
-    │       ├── IdleState.cs
-    │       ├── MoveState.cs
-    │       ├── JumpState.cs
-    │       ├── FallState.cs
-    │       └── AttackState.cs
-    └── Physics/
-        └── PhysicsController.cs
+        ├── Actions/
+        │   ├── CharacterActions.cs
+        │   ├── Vector2Input.cs
+        ├── Core/
+        │   ├── CharacterActor.cs
+        │   └── CharacterBrain.cs
+        │   └── CharacterState.cs
+        │   └── CharacterStateController.cs
+        ├── States/
+        │   ├── NormalMovement.cs
+        │   ├── TestState.cs
+    ├── Character/
+    │   ├── GameManager.cs
 ```
-
----
-
-## 🤝 Contributing
-
-PR приветствуются! Для крупных изменений — сначала откройте Issue.
-
-1. Fork репозитория
-2. Создайте ветку: `git checkout -b feature/WallJump`
-3. Commit: `git commit -m "Add wall jump state"`
-4. Push: `git push origin feature/WallJump`
-5. Откройте Pull Request
-
----
 
 ## 📄 Лицензия
 
