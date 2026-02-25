@@ -22,7 +22,6 @@
 - **New Input System** — поддержка геймпадов, клавиатуры, тач-ввода из коробки
 - **Расширяемость** — новое состояние добавляется за ~5 минут
 - **Без зависимостей** — чистый C#, никаких сторонних пакетов
-- **Coyote Time & Jump Buffer** — отзывчивое управление прыжком
 
 ---
 
@@ -30,52 +29,20 @@
 
 ```
 CharacterController2D
-├── StateMachine
-│   ├── StateBase            ← абстрактный базовый класс
-│   ├── IdleState
-│   ├── MoveState
-│   ├── JumpState
-│   ├── FallState
-│   └── AttackState
-├── InputHandler             ← обёртка над New Input System
-├── PhysicsController        ← Rigidbody2D + коллизии
-└── CharacterData (SO)       ← ScriptableObject с параметрами
-```
+├── CharacterStateController
+│   ├── CharacterState            ← абстрактный базовый класс
+│   ├── NormalMovement            ← Класс передвижения        
+│   ├── TestState                 ← Класс для проверки перехода между состояниями
 
-### Диаграмма переходов
-
+├── CharacterActions             ← обёртка над New Input System
 ```
-          ┌─────────────────────────────┐
-          │           IDLE              │
-          └────┬────────────┬───────────┘
-         move  │            │ jump
-               ▼            ▼
-          ┌─────────┐  ┌─────────┐
-          │  MOVE   │  │  JUMP   │
-          └────┬────┘  └────┬────┘
-        jump   │            │ velocity.y < 0
-               │            ▼
-               │       ┌─────────┐
-               └──────▶│  FALL   │
-                        └────┬────┘
-                    grounded │
-                             ▼
-                        ┌─────────┐
-                        │  IDLE   │
-                        └─────────┘
-```
-
----
 
 ## 🧩 Состояния
 
 | Состояние | Описание | Переходы |
 |-----------|----------|----------|
-| `IdleState` | Персонаж стоит на месте | → Move, Jump, Fall |
-| `MoveState` | Горизонтальное перемещение | → Idle, Jump, Fall |
-| `JumpState` | Прыжок вверх | → Fall |
-| `FallState` | Падение / воздух | → Idle, Move |
-| `AttackState` | Атака (анимация + хитбокс) | → Idle |
+| `NormalMovement` | Персонаж стоит на месте и передвижение | Idle, Move |
+| `TestState` |  Тестовое состояние 
 
 ---
 
@@ -89,14 +56,10 @@ CharacterController2D
 
 1. Склонировать репозиторий или скопировать папку `Scripts/` в свой проект
 ```bash
-git clone https://github.com/username/2d-character-controller.git
+git clone https://github.com/W-I-W/CharacterController2D.git
 ```
 
 2. В **Project Settings → Player** переключить Active Input Handling на `Input System Package (New)`
-
-3. Создать `CharacterData` ScriptableObject через `Assets → Create → Character → Data`
-
-4. Добавить компонент `CharacterController2D` на объект персонажа
 
 ---
 
